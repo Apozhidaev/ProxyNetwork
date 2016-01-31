@@ -4,49 +4,38 @@ using System.Net.Http;
 
 namespace ProxyNetwork
 {
-    public class HttpClientPro : IDisposable
+    public class HttpClientPro : HttpClient
     {
-        public static HttpClientPro Create(IProxyProvider proxyProvider)
+        public HttpClientPro() { }
+
+        public HttpClientPro(HttpMessageHandler handler)
+            : base(handler) { }
+
+        public HttpClientPro(HttpMessageHandler handler, bool disposeHandler)
+            : base(handler, disposeHandler)
         {
-            var proxy = proxyProvider.Next();
-            if (proxy == null)
-            {
-                proxyProvider.Refresh().Wait();
-                proxy = proxyProvider.Next();
-                if (proxy == null)
-                {
-                    throw new Exception("The proxy provider had not found available proxy.");
-                }
-            }
-            return new HttpClientPro(proxy);
         }
 
-        public HttpClientPro(Uri proxy = null)
+        public HttpClientPro(ProxyIdentity identity)
+            : this(CreateHandler(identity), true)
         {
-            if (proxy != null)
-            {
-                Proxy = proxy;
-                var handler = new HttpClientHandler
-                {
-                    UseProxy = true,
-                    Proxy = new WebProxy(proxy) { UseDefaultCredentials = false }
-                };
-                Client = new HttpClient(handler);
-            }
-            else
-            {
-                Client = new HttpClient();
-
-            }
+            Identity = identity;
         }
 
-        public HttpClient Client { get; }
+        public ProxyIdentity Identity { get; private set; }
 
-        public Uri Proxy { get; }
-
-        public void Dispose()
+        private static HttpMessageHandler CreateHandler(ProxyIdentity identity)
         {
-            Client.Dispose();
+            if(identity == null) throw new ArgumentNullException(nameof(identity));
+            var proxy = identity.Credential != null
+                ? new WebProxy(identity.Proxy, true, null, identity.Credential)
+                : new WebProxy(identity.Proxy);
+            proxy.UseDefaultCredentials = identity.Credential != null;
+            return new HttpClientHandler
+            {
+                UseProxy = true,
+                Proxy = proxy
+            };
         }
     }
 }

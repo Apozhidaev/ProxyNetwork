@@ -1,12 +1,13 @@
-﻿using System;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 
 namespace ProxyNetwork
 {
     public interface IProxyProvider
     {
-        Task<int> Refresh();
-        Uri Next();
-        void Remove(Uri proxy, bool toBlackList);
+        Task<int> RefreshAsync();
+        ProxyIdentity Next();
+        ProxyIdentity[] GetIdentities();
+        void Remove(ProxyIdentity identity);
+        void ToBlackList(string host);
     }
 }
