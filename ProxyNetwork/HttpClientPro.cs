@@ -9,12 +9,11 @@ namespace ProxyNetwork
         public HttpClientPro() { }
 
         public HttpClientPro(HttpMessageHandler handler)
-            : this(handler, true) { }
+            : base(handler) { }
 
         public HttpClientPro(HttpMessageHandler handler, bool disposeHandler)
             : base(handler, disposeHandler)
         {
-            Handler = handler;
         }
 
         public HttpClientPro(ProxyIdentity identity)
@@ -28,7 +27,6 @@ namespace ProxyNetwork
             }
         }
 
-        public HttpMessageHandler Handler { get; private set; }
         public ProxyIdentity Identity { get; private set; }
 
         private static HttpMessageHandler CreateHandler(ProxyIdentity identity)
