@@ -20,6 +20,11 @@ namespace ProxyNetwork
             : this(CreateHandler(identity), true)
         {
             Identity = identity;
+            DefaultRequestHeaders.UserAgent.Clear();
+            if (!string.IsNullOrEmpty(identity.UserAgent))
+            {
+                DefaultRequestHeaders.UserAgent.ParseAdd(identity.UserAgent);
+            }
         }
 
         public ProxyIdentity Identity { get; private set; }
